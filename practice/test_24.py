@@ -1,73 +1,28 @@
-import time
-import pytest
-import random
-import string
-from selenium import webdriver
-
-from selenium.webdriver.chrome.webdriver import WebDriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support import expected_conditions as EC
-
-#@pytest.fixture
-#def driver():
-   #yield driver
-   #driver.quit()
-
-def test_main():
-    driver = webdriver.Chrome()
-    driver.get('https://erikdark.github.io/QA_DIPLOM/')
-    WebDriverWait(driver,5).until(EC.element_to_be_clickable((By.LINK_TEXT, 'Регистрация'))).click() 
-    name = driver.find_element(By.ID,'name')
-    email_inp = driver.find_element(By.ID,'email')
-   
-    pass_inp = driver.find_element(By.ID,'password')
-    
-    pass_conf = driver.find_element(By.ID,'confirmPassword')    
-
-    try:
-        email_inp.send_keys('noexample.com')
-        print('False')
-        name.send_keys('N12')
-        print('False')
-        pass_inp.send_keys('newpass')
-        print('False')
-        pass_conf.send_keys('lololo')
-        print('False')
-        time.sleep(2)
-        WebDriverWait(driver,5).until(EC.element_to_be_clickable((By.CSS_SELECTOR,'button[type="submit"]'))).click() 
-        valid_mes = email_inp.get_property('validationMessage')
-        print(f'Valid message{valid_mes}')
-        email_inp.clear()
-        email_inp.send_keys('nololo@example.com')
-        print('True')
-        WebDriverWait(driver,5).until(EC.element_to_be_clickable((By.CSS_SELECTOR,'button[type="submit"]'))).click()                
-        message = driver.find_element(By.ID,'message').text
-        assert 'Имя может содержать только буквы и знак "-"' == message
-        name.clear()
-        name.send_keys('Alisa')
-        print('True')
-        WebDriverWait(driver,5).until(EC.element_to_be_clickable((By.CSS_SELECTOR,'button[type="submit"]'))).click()  
-        message1 = driver.find_element(By.ID,'message').text
-        assert 'Пароль должен содержать не менее 8 символов, включая 1 заглавную букву, 1 строчную букву и 1 цифру' == message1
-        pass_inp.clear()   
-        pass_inp.send_keys('Newpass1')
-        print('True')
-        WebDriverWait(driver,5).until(EC.element_to_be_clickable((By.CSS_SELECTOR,'button[type="submit"]'))).click()
-        message2 = driver.find_element(By.ID,'message').text
-        assert 'Пароли не совпадают' == message2  
-        pass_conf.clear()
-        pass_conf.send_keys('Newpass1')
-        print('True')
-        WebDriverWait(driver,5).until(EC.element_to_be_clickable((By.CSS_SELECTOR,'button[type="submit"]'))).click() 
-
-
-    except: 
-        print ('Ошибка')   
-        
-    message1 = driver.find_element(By.ID,'message').text
-    assert 'Регистрация успешна!' == message1
-    
-test_main()
+from selenium import webdriver  
+from selenium.webdriver.common.by import By  
+import time  
+import pytest  
+import re  
+  
+@pytest.fixture  
+def driver():  
+    driver = webdriver.Firefox()  
+    driver.implicitly_wait(3)  
+    yield driver  
+    driver.quit()
+def test3(driver): 
+    driver.get('https://erikdark.github.io/QA_DIPLOM/') 
+    driver.find_element(By.CSS_SELECTOR, '[href="shop.html"]').click() 
+    for i in range (1,4): 
+        btn = driver.find_element(By.CSS_SELECTOR, f'button[data-name="Товар {i}"]').click() 
+        driver.switch_to.alert.accept() 
+    card = driver.find_element(By.ID, 'cartButton') 
+    card.click() 
+    cart_e = driver.find_element(By.ID, 'cartItems').text 
+    assert "Товар 1 - $100" in cart_e, "Товар 1 не добавлен" 
+    assert "Товар 2 - $200" in cart_e, "Товар 2 не добавлен" 
+    assert "Товар 3 - $350" in cart_e, "Товар 3 не добавлен" 
+    total = 'Общая стоимость: $650' 
+    cart_t = driver.find_element(By.ID, 'cartTotal').text 
+    assert cart_t == total, f"Сумма неверна, получилос{cart_t}" 
+    time.sleep(5)
